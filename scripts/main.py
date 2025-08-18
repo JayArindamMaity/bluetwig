@@ -3,16 +3,55 @@ import re
 import inflect
 import readchar
 from rich.console import Console
-from rich.text import Text
+from dotenv import load_dotenv
+
+load_dotenv()
 
 console = Console()
 
 ALLOWED_PLATFORMS = ["leetcode", "codeforces", "codechef"]
-ALLOWED_LANGUAGES = {"cpp": "solcpp", "java": "soljava", "python": "solpyth", "rust": "solrust"}
+ALLOWED_LANGUAGES = {
+    "cpp": "solcpp",
+    "java": "soljava",
+    "python": "solpyth",
+    "rust": "solrust",
+}
+
+# Add explanation keys
+ALL_KEYS = {
+    "solcpp": "",
+    "expcpp": "",
+    "soljava": "",
+    "expjava": "",
+    "solpyth": "",
+    "exppyth": "",
+    "solrust": "",
+    "exprust": "",
+}
+
+# ------------------------------------------------------------
+# Gemini prompt configuration (editable/customizable by you)
+# ------------------------------------------------------------
+PROMPT_CONFIG = """You are an expert programmer.
+Provide a step-by-step explanation for the following solution (in markdown):
+
+{code}
+"""
+
+MODEL_NAME = "models/gemini-2.5-pro"  # change later if Google updates it
+
+
+def generate_explanation(code: str, prompt_config: str) -> str:
+    from google.generativeai import GenerativeModel, configure
+
+    configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = GenerativeModel(MODEL_NAME)
+    prompt = prompt_config.format(code=code)
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 
 def select_from_list(title, options):
-    """Interactive ↑/↓ menu selection without box borders."""
     index = 0
     while True:
         console.clear()
@@ -46,7 +85,6 @@ def get_multiline_input(end_marker="endloop"):
 
 
 def build_output_path(platform, category):
-    # Always use project root as base
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     base_path = os.path.join(project_root, "frontend", "public", "data", platform)
     os.makedirs(base_path, exist_ok=True)
@@ -57,41 +95,41 @@ def parse_existing_file(filepath):
     if not os.path.exists(filepath):
         return []
 
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-    except OSError as e:
-        console.print(f"[red]⚠ Could not read file:[/red] {e}")
-        return []
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
 
     match = re.search(r"\[\s*(.*?)\s*\];", content, re.DOTALL)
     if not match:
         return []
 
     array_content = match.group(1).strip()
-    if not array_content:
-        return []
-
     entries = []
+
     pattern = re.compile(
         r'\{\s*quesname:\s*"([^"]+)",\s*'
         r'queslink:\s*"([^"]+)",\s*'
-        r'soljava:\s*`([^`]*)`,\s*'
-        r'solcpp:\s*`([^`]*)`,\s*'
-        r'solpyth:\s*`([^`]*)`,\s*'
-        r'solrust:\s*`([^`]*)`\s*\}',
+        r"soljava:\s*`([^`]*)`,\s*expjava:\s*`([^`]*)`,\s*"
+        r"solcpp:\s*`([^`]*)`,\s*expcpp:\s*`([^`]*)`,\s*"
+        r"solpyth:\s*`([^`]*)`,\s*exppyth:\s*`([^`]*)`,\s*"
+        r"solrust:\s*`([^`]*)`,\s*exprust:\s*`([^`]*)`\s*\}",
         re.DOTALL,
     )
 
     for m in pattern.finditer(array_content):
-        entries.append({
-            "quesname": m.group(1),
-            "queslink": m.group(2),
-            "soljava": m.group(3),
-            "solcpp": m.group(4),
-            "solpyth": m.group(5),
-            "solrust": m.group(6),
-        })
+        entries.append(
+            {
+                "quesname": m.group(1),
+                "queslink": m.group(2),
+                "soljava": m.group(3),
+                "expjava": m.group(4),
+                "solcpp": m.group(5),
+                "expcpp": m.group(6),
+                "solpyth": m.group(7),
+                "exppyth": m.group(8),
+                "solrust": m.group(9),
+                "exprust": m.group(10),
+            }
+        )
 
     return entries
 
@@ -112,15 +150,22 @@ def format_ts_export(export_name, data_list, platform, category):
         f"export const {export_name} = [",
     ]
     for entry in data_list:
-        lines.append("    {")
-        lines.append(f'        quesname: "{entry["quesname"]}",')
-        lines.append(f'        queslink: "{entry["queslink"]}",')
-        for lang in ["soljava", "solcpp", "solpyth", "solrust"]:
-            code_str = escape_backticks(entry[lang]) if entry[lang] else ""
-            lines.append(
-                f'        {lang}: `{code_str}`,' if lang != "solrust" else f'        {lang}: `{code_str}`'
-            )
-        lines.append("    },")
+        lines.append("  {")
+        lines.append(f'    quesname: "{entry["quesname"]}",')
+        lines.append(f'    queslink: "{entry["queslink"]}",')
+        for key in [
+            "soljava",
+            "expjava",
+            "solcpp",
+            "expcpp",
+            "solpyth",
+            "exppyth",
+            "solrust",
+            "exprust",
+        ]:
+            code_str = escape_backticks(entry[key]) if entry[key] else ""
+            lines.append(f"    {key}: `{code_str}`,")
+        lines.append("  },")
     lines.append("];")
     return "\n".join(lines)
 
@@ -128,43 +173,37 @@ def format_ts_export(export_name, data_list, platform, category):
 def show_entries(entries):
     console.print("\n[bold magenta]📜 Current Entries:[/bold magenta]")
     for idx, e in enumerate(entries, start=1):
-        console.print(f"[cyan]{idx}.[/cyan] {e['quesname']} - [blue]{e['queslink']}[/blue]")
+        console.print(
+            f"[cyan]{idx}.[/cyan] {e['quesname']} - [blue]{e['queslink']}[/blue]"
+        )
 
 
 def main():
-    console.print("[bold green]Welcome to Codesolve!!![/bold green] [yellow](Interactive Edition)[/yellow]\n")
+    console.print(
+        "[bold green]Welcome to Codesolve!!![/bold green] [yellow](Interactive Edition)[/yellow]\n"
+    )
 
-    # Platform
     platform = select_from_list("Select Platform", ALLOWED_PLATFORMS)
-
-    # Question name & link
     quesname = input("Enter question name (case sensitive): ").strip()
     queslink = input("Enter question link: ").strip()
 
-    # Ratings
     if platform == "leetcode":
         rating = select_from_list("Select Rating", ["easy", "medium", "hard"])
         category = rating
         export_name = f"leetcode_{rating}"
-    elif platform in ["codeforces", "codechef"]:
+    else:
         rating = input("Enter numeric rating (e.g., 800, 1200): ").strip()
-        try:
-            rating_num = int(rating)
-            lower_bound = (rating_num // 100) * 100
-            category = str(lower_bound)
-            export_name = number_to_words(lower_bound)
-        except ValueError:
-            console.print("[red]❌ Invalid numeric rating.[/red]")
-            return
+        rating_num = int(rating)
+        lower_bound = (rating_num // 100) * 100
+        category = str(lower_bound)
+        export_name = number_to_words(lower_bound)
 
-    # Language selection
     language = select_from_list("Select Language", list(ALLOWED_LANGUAGES.keys()))
     code = get_multiline_input()
 
     filepath = build_output_path(platform, category)
     existing_entries = parse_existing_file(filepath)
 
-    # Update or append entry
     lang_key = ALLOWED_LANGUAGES[language]
     updated = False
     for entry in existing_entries:
@@ -174,22 +213,34 @@ def main():
             break
 
     if not updated:
-        new_entry = {k: "" for k in ALLOWED_LANGUAGES.values()}
+        new_entry = ALL_KEYS.copy()
         new_entry.update({"quesname": quesname, "queslink": queslink, lang_key: code})
         existing_entries.append(new_entry)
 
-    # Save file
+    # First save
     ts_content = format_ts_export(export_name, existing_entries, platform, category)
-    try:
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(ts_content)
+    console.print(
+        f"\n[bold green]✅ Solution saved successfully in:[/bold green] {filepath}"
+    )
+
+    use_gemini = select_from_list(
+        "Generate Gemini explanation for this solution?", ["yes", "no"]
+    )
+    if use_gemini == "yes":
+        for entry in existing_entries:
+            if entry["quesname"] == quesname and entry["queslink"] == queslink:
+                sol_key = ALLOWED_LANGUAGES[language]
+                exp_key = "exp" + language
+                explanation = generate_explanation(entry[sol_key], PROMPT_CONFIG)
+                entry[exp_key] = explanation
+                break
+
+        ts_content = format_ts_export(export_name, existing_entries, platform, category)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(ts_content)
-        console.print(f"\n[bold green]✅ Solution saved successfully in:[/bold green] {filepath}")
-    except OSError as e:
-        console.print(f"[red]❌ Failed to write file:[/red] {e}")
-        return
-
-    # Show all entries after saving
-    show_entries(existing_entries)
+        console.print("[green]✅ Explanation added using Gemini.[/green]")
 
 
 if __name__ == "__main__":
