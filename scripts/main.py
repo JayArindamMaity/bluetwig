@@ -10,6 +10,7 @@ load_dotenv()
 console = Console()
 
 ALLOWED_PLATFORMS = ["leetcode", "codeforces", "codechef"]
+
 ALLOWED_LANGUAGES = {
     "cpp": "solcpp",
     "java": "soljava",
@@ -32,8 +33,20 @@ ALL_KEYS = {
 # ------------------------------------------------------------
 # Gemini prompt configuration (editable/customizable by you)
 # ------------------------------------------------------------
-PROMPT_CONFIG = """You are an expert programmer.
-Provide a step-by-step explanation for the following solution (in markdown):
+PROMPT_CONFIG = """You are an expert programmer and technical writer.
+Provide a step-by-step explanation for the following solution in plain markdown bullet points.
+
+Follow these instructions strictly:
+1. The explanation must be **concise** and in plain points.
+2. Do **not** copy or quote lines from the original code.
+3. Do **not** repeat or rephrase the code. Focus only on describing the logic in a high-level manner.
+4. Do **not** use analogies or real-life examples.
+5. Discuss the logic and high-level approach separately from the code implementation.
+6. Do **not** use headings, bold text, or any form of formatting. Only use simple bullet points.
+7. Do **not** start with phrases like "Here is the explanation" or "Of course".
+8. The output must consist **only** of bullet points explaining the logic and idea behind the solution.
+
+Here is the solution:
 
 {code}
 """
@@ -47,8 +60,15 @@ def generate_explanation(code: str, prompt_config: str) -> str:
     configure(api_key=os.getenv("GEMINI_API_KEY"))
     model = GenerativeModel(MODEL_NAME)
     prompt = prompt_config.format(code=code)
-    response = model.generate_content(prompt)
-    return response.text.strip()
+
+    response = model.generate_content(
+        prompt, generation_config={"max_output_tokens": 1500}
+    )
+
+    # safely extract text
+    if response.candidates and response.candidates[0].content.parts:
+        return response.candidates[0].content.parts[0].text.strip()
+    return ""
 
 
 def select_from_list(title, options):
