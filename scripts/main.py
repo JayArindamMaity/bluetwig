@@ -11,6 +11,7 @@ console = Console()
 
 ALLOWED_PLATFORMS = ["leetcode", "codeforces", "codechef"]
 
+# Do NOT include "all" here
 ALLOWED_LANGUAGES = {
     "cpp": "solcpp",
     "java": "soljava",
@@ -30,9 +31,6 @@ ALL_KEYS = {
     "exprust": "",
 }
 
-# ------------------------------------------------------------
-# Gemini prompt configuration (editable/customizable by you)
-# ------------------------------------------------------------
 PROMPT_CONFIG = """You are an expert programmer and technical writer.
 Provide a step-by-step explanation for the following solution in plain markdown bullet points.
 
@@ -51,7 +49,7 @@ Here is the solution:
 {code}
 """
 
-MODEL_NAME = "models/gemini-2.5-pro"  # change later if Google updates it
+MODEL_NAME = "models/gemini-2.5-pro"
 
 
 def generate_explanation(code: str, prompt_config: str) -> str:
@@ -65,7 +63,6 @@ def generate_explanation(code: str, prompt_config: str) -> str:
         prompt, generation_config={"max_output_tokens": 1500}
     )
 
-    # safely extract text
     if response.candidates and response.candidates[0].content.parts:
         return response.candidates[0].content.parts[0].text.strip()
     return ""
@@ -90,8 +87,8 @@ def select_from_list(title, options):
             return options[index]
 
 
-def get_multiline_input(end_marker="endloop"):
-    console.print(f"[cyan]Enter your code (end with '{end_marker}'):[/cyan]")
+def get_multiline_input(prompt, end_marker="endloop"):
+    console.print(f"[cyan]{prompt} (end with '{end_marker}'):[/cyan]")
     lines = []
     while True:
         try:
@@ -218,26 +215,41 @@ def main():
         category = str(lower_bound)
         export_name = number_to_words(lower_bound)
 
-    language = select_from_list("Select Language", list(ALLOWED_LANGUAGES.keys()))
-    code = get_multiline_input()
+    # add 'all' to the list of languages shown to the user
+    language_options = list(ALLOWED_LANGUAGES.keys()) + ["all"]
+    language_choice = select_from_list("Select Language", language_options)
 
     filepath = build_output_path(platform, category)
     existing_entries = parse_existing_file(filepath)
 
-    lang_key = ALLOWED_LANGUAGES[language]
+    # create / update entry
     updated = False
+    target_entry = None
+
     for entry in existing_entries:
         if entry["quesname"] == quesname and entry["queslink"] == queslink:
-            entry[lang_key] = code
+            target_entry = entry
             updated = True
             break
 
     if not updated:
-        new_entry = ALL_KEYS.copy()
-        new_entry.update({"quesname": quesname, "queslink": queslink, lang_key: code})
-        existing_entries.append(new_entry)
+        target_entry = ALL_KEYS.copy()
+        target_entry.update({"quesname": quesname, "queslink": queslink})
+        existing_entries.append(target_entry)
 
-    # First save
+    # Handle "all" or single language
+    if language_choice == "all":
+        # alphabetical order
+        for lang in sorted(ALLOWED_LANGUAGES.keys()):
+            prompt = f"Enter your code for {lang}"
+            code = get_multiline_input(prompt)
+            target_entry[ALLOWED_LANGUAGES[lang]] = code
+    else:
+        code = get_multiline_input("Enter your code")
+        lang_key = ALLOWED_LANGUAGES[language_choice]
+        target_entry[lang_key] = code
+
+    # Save solutions
     ts_content = format_ts_export(export_name, existing_entries, platform, category)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(ts_content)
@@ -248,20 +260,22 @@ def main():
     use_gemini = select_from_list(
         "Generate Gemini explanation for this solution?", ["yes", "no"]
     )
+
     if use_gemini == "yes":
-        for entry in existing_entries:
-            if entry["quesname"] == quesname and entry["queslink"] == queslink:
-                sol_key = ALLOWED_LANGUAGES[language]
-                exp_key = "exp" + language
-                explanation = generate_explanation(entry[sol_key], PROMPT_CONFIG)
-                entry[exp_key] = explanation
-                break
+        # generate explanations for all non-empty solution fields
+        for lang, sol_key in ALLOWED_LANGUAGES.items():
+            code_str = target_entry.get(sol_key, "")
+            if code_str.strip():
+                exp_key = "exp" + lang
+                explanation = generate_explanation(code_str, PROMPT_CONFIG)
+                target_entry[exp_key] = explanation
 
         ts_content = format_ts_export(export_name, existing_entries, platform, category)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(ts_content)
-        console.print("[green]✅ Explanation added using Gemini.[/green]")
+        console.print("[green]✅ Explanations added using Gemini.[/green]")
 
 
 if __name__ == "__main__":
     main()
+
