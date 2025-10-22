@@ -4,8 +4,8 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 999;
-    backdrop-filter: blur(15px);
-    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(8px);
+    background: rgba(20, 20, 20, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -13,36 +13,44 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background 0.3s ease, transform 0.3s ease;
     width: fit-content;
     min-width: 240px;
+    height: 52px; /* Fixed navbar height */
+    transition: background 0.3s ease, transform 0.3s ease;
+    box-sizing: border-box;
 }
 
-/* Nav items centered */
+/* Nav list stays vertically centered */
 .nav-list {
     display: flex;
     list-style: none;
     gap: 1.4rem;
-    margin: 0;
+    margin-top: 30px;
     padding: 0;
     align-items: center;
 }
 
+/* Nav links */
 .nav-list li a {
     font-size: 1.4rem;
     color: var(--navbar-icon-color);
     text-decoration: none;
     transition: transform 0.2s ease, color 0.2s ease;
+    line-height: 1; /* Keeps consistent vertical alignment */
 }
 
 .nav-list li a:hover {
     color: var(--accent-color);
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
-/* Theme Button inside nav */
+/* Theme toggle */
 .theme-toggle {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 .theme-btn {
@@ -52,6 +60,10 @@
     color: var(--navbar-icon-color);
     font-size: 1.4rem;
     transition: transform 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 .theme-btn:hover {
@@ -59,10 +71,10 @@
     color: var(--accent-color);
 }
 
-/* Dropdown styling */
+/* Dropdown: no layout shift */
 .theme-dropdown {
     position: absolute;
-    top: 2.2rem;
+    top: calc(100% + 0.6rem);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(30, 30, 30, 0.85);
@@ -74,6 +86,8 @@
     gap: 0.5rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.2s ease;
+    pointer-events: auto;
+    z-index: 1000;
 }
 
 .theme-swatch {
@@ -104,6 +118,7 @@
         top: 0.6rem;
         padding: 0.5rem 1rem;
         border-radius: 15px;
+        height: 46px; /* Adjusted for smaller screens */
     }
     .nav-list {
         gap: 1rem;

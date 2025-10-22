@@ -1,0 +1,130 @@
+.home-container {
+    max-width: 3000px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-color, #fff);
+    background-color: transparent;
+    line-height: 1.6;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centers content vertically */
+    min-height: calc(100vh - 80px); /* 100vh minus navbar space */
+    text-align: center; /* Keeps all text naturally centered */
+}
+
+/* Keeps spacing from navbar but doesn’t push layout */
+.main-content {
+    margin-top: calc(8vh + 10px);
+    margin-left: 10vw;
+    margin-right: 10vw;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--accent-color);
+}
+
+.highlight {
+    color: var(--accent-color);
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 1.25rem;
+    color: var(--navbar-icon-color);
+    margin-bottom: 3rem;
+    max-width: 700px;
+}
+
+.intro-section,
+.learn-section,
+.code-mindset {
+    margin-bottom: 3rem;
+    background-color: rgba(255, 255, 255, 0.03);
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: left; /* So blocks read naturally */
+    width: 100%;
+    max-width: 800px;
+}
+
+h2 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+p {
+    margin-bottom: 1rem;
+    color: #ccc;
+}
+
+ul {
+    padding-left: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.75rem;
+    color: #ddd;
+}
+
+.platform {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.cta {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.cta-button {
+    background: var(--accent-color);
+    color: #000;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    display: inline-block;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Prevent navbar height inflation */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Responsive tweaks */
+@media (max-width: 700px) {
+    .home-container {
+        padding: 2rem 1rem;
+        min-height: calc(100vh - 70px);
+    }
+
+    .title {
+        font-size: 2.2rem;
+    }
+
+    .subtitle {
+        font-size: 1.1rem;
+    }
+
+    .intro-section,
+    .learn-section,
+    .code-mindset {
+        padding: 1.25rem 1.5rem;
+    }
+}
