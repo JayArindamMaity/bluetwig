@@ -1,11 +1,11 @@
 import "./App.css";
 import Home from "./pages/home/home";
 import Navbar from "./components/navbar/navbar";
-import Footer from "./components/footer/footer";
+// import Footer from "./components/footer/footer";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 
-
 function App() {
+
   return (
     <Router>
       <div className="page-container">
@@ -17,7 +17,7 @@ function App() {
           </Routes>
         </div>
 
-        <Footer />
+        {/* <Footer /> */}
       </div>
     </Router>
   );

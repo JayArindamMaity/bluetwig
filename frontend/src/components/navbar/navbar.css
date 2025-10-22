@@ -1,20 +1,114 @@
-.nav-main   {
-    background-color: red;
-    margin-left: 10vw;
-    margin-right: 10vw;
-    margin-top: 5vh;
+.nav-main {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    backdrop-filter: blur(15px);
+    background: rgba(20, 20, 20, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    padding: 0.6rem 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s ease, transform 0.3s ease;
+    width: fit-content;
+    min-width: 240px;
 }
 
-.nav-lst {
-    margin-left: 5vw;
-    margin-right: 5vw;
-    list-style: none;
+/* Nav items centered */
+.nav-list {
     display: flex;
-    justify-content: space-between;
+    list-style: none;
+    gap: 1.4rem;
+    margin: 0;
+    padding: 0;
     align-items: center;
 }
 
-a {
-    color: white;
-    font-size: x-large;
+.nav-list li a {
+    font-size: 1.4rem;
+    color: var(--navbar-icon-color);
+    text-decoration: none;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.nav-list li a:hover {
+    color: var(--accent-color);
+    transform: scale(1.2);
+}
+
+/* Theme Button inside nav */
+.theme-toggle {
+    position: relative;
+}
+
+.theme-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--navbar-icon-color);
+    font-size: 1.4rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.theme-btn:hover {
+    transform: rotate(20deg);
+    color: var(--accent-color);
+}
+
+/* Dropdown styling */
+.theme-dropdown {
+    position: absolute;
+    top: 2.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.4rem 0.6rem;
+    display: flex;
+    gap: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s ease;
+}
+
+.theme-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-swatch:hover {
+    transform: scale(1.1);
+}
+
+.theme-swatch.active {
+    border-color: var(--accent-color);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .nav-main {
+        top: 0.6rem;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+    }
+    .nav-list {
+        gap: 1rem;
+    }
+    .nav-list li a {
+        font-size: 1.2rem;
+    }
 }
