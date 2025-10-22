@@ -1,0 +1,15 @@
+.nav-main   {
+    background-color: red;
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-top: 5vh;
+}
+
+.nav-lst {
+    margin-left: 5vw;
+    margin-right: 5vw;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
