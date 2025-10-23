@@ -1,46 +1,93 @@
 body {
-    margin: 0;
-    padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Default dark */
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+
+
 :root {
-    --navbar-icon-color: #ccc;
-    --accent-color: #00aaff;
-    background-color: #0d0d0d;
-    color: #fff;
+  --navbar-icon-color: #ccc;
+  --accent-color: #00aaff;
+  --bg-color: #0d0d0d;
+  --text-color: #fff;
+  --box-bg: #1a1a1a;
+  --border-color: #333;
 }
 
-/* Blue Dark Theme */
 [data-theme="blue-dark"] {
-    --navbar-icon-color: #e0e0e0;
-    --accent-color: #00aaff;
-    background-color: #0b0b0f;
+  --navbar-icon-color: #e0e0e0;
+  --accent-color: #00aaff;
+  --bg-color: #0b0b0f;
 }
 
-/* Orange Dark Theme */
 [data-theme="orange-dark"] {
-    --navbar-icon-color: #fffae0;
-    --accent-color: #ff9100;
-    background-color: #120e0a;
+  --navbar-icon-color: #fffae0;
+  --accent-color: #ff9100;
+  --bg-color: #120e0a;
 }
 
-/* Purple Dark Theme */
 [data-theme="purple-dark"] {
-    --navbar-icon-color: #f0e0ff;
-    --accent-color: #b26bff;
-    background-color: #100918;
+  --navbar-icon-color: #f0e0ff;
+  --accent-color: #b26bff;
+  --bg-color: #100918;
 }
 
-/* Red Dark Theme */
 [data-theme="red-dark"] {
-    --navbar-icon-color: #ffe0e0;
-    --accent-color: #ff4f4f;
-    background-color: #150808;
+  --navbar-icon-color: #ffe0e0;
+  --accent-color: #ff4f4f;
+  --bg-color: #150808;
 }
 
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
+/* .navbar {
+  width: 220px;
+  background-color: var(--box-bg);
+  border-left: 1px solid var(--border-color);
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+} */
+
+.filter-btn {
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  padding: 10px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.code-block {
+  background-color: var(--box-bg);
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 6px;
+  position: relative;
+  overflow-x: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--accent-color);
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  color: #000;
 }
 
 .main-content {

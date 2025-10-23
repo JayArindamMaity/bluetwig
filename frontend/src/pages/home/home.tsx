@@ -46,10 +46,10 @@ export default function Home() {
                     The point is the journey from confusion to clarity.
                 </p>
             </div>
-
+{/* 
             <div className="cta">
                 <a href="/problems" className="cta-button">Start Practicing →</a>
-            </div>
+            </div> */}
         </div>
     );
 }

@@ -1,0 +1,134 @@
+/* Main LeetCode Container */
+.leetcode-container {
+  display: flex;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Fira Code', monospace; /* clean monospaced font for code */
+}
+
+/* Main content area */
+.leetcode-main {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  margin-left: 250px; /* match leftbar width */
+  transition: margin 0.3s;
+}
+
+/* Greeting */
+.leetcode-greeting {
+  text-align: center;
+  margin-top: 15%;
+  color: var(--accent-color);
+}
+
+/* Question title */
+.leetcode-question h1 {
+  color: var(--accent-color);
+  margin-bottom: 8px;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Link styling */
+.leetcode-question a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  margin-bottom: 15px;
+  display: inline-block;
+}
+
+/* Tags */
+.leetcode-tags {
+  margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.leetcode-tag {
+  border: 1px solid var(--accent-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  background-color: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s;
+}
+
+.leetcode-tag:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* Difficulty label */
+.leetcode-diff {
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+/* Code box styling */
+.leetcode-codebox {
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 15px 15px 40px 15px;
+  margin-bottom: 25px;
+  position: relative;
+  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Copy button */
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.copy-btn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* Code font */
+pre code {
+  display: block;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.92rem;
+  white-space: pre-wrap; /* wraps long lines */
+  word-break: break-word;
+  color: #ddd;
+}
+
+/* Highlight language headings */
+.leetcode-question h3 {
+  margin-bottom: 6px;
+  color: var(--accent-color);
+  font-size: 1.1rem;
+}
+
+/* Scrollbar for main content */
+.leetcode-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leetcode-main::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.leetcode-main::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -23,7 +23,7 @@ export default function Navbar() {
     <nav className="nav-main">
       <ul className="nav-list">
         <li><a href="#"><FaHome /></a></li>
-        <li><a href="#"><SiLeetcode /></a></li>
+        <li><a href="/leetcode"><SiLeetcode /></a></li>
         <li><a href="#"><SiCodeforces /></a></li>
         <li><a href="#"><SiCodechef /></a></li>
 
