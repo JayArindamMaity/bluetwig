@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "../../pages/leetcode/leetcode.css";
 import Leftbar from "../../components/leftbar/leftbar";
+import { easyQuestions } from "../../data/leetcode/easy";
+import { mediumQuestions } from "../../data/leetcode/medium";
+import { hardQuestions } from "../../data/leetcode/hard";
+
 
 export interface QuestionType {
   id: number;
@@ -16,41 +20,32 @@ const Leetcode: React.FC = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionType | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
 
-  const normalizeDifficulty = (d: string): "Easy" | "Medium" | "Hard" => {
-    switch (d.toLowerCase()) {
-      case "easy":
-        return "Easy";
-      case "medium":
-        return "Medium";
-      case "hard":
-        return "Hard";
-      default:
-        throw new Error("Invalid difficulty: " + d);
-    }
-  };
-
-  const loadQuestions = async (difficulty: string | null) => {
-    const importData = async (level: string) => {
-      const imported = await import(`../../../public/data/leetcode/${level}`);
-      const key = `${level}Questions`;
-      return imported[key].map((q: any) => ({
-        ...q,
-        difficulty: normalizeDifficulty(q.difficulty),
-      }));
-    };
-
+  const loadQuestions = (difficulty: string | null) => {
     let data: QuestionType[] = [];
+
     if (difficulty) {
-      data = await importData(difficulty.toLowerCase());
+      switch (difficulty.toLowerCase()) {
+        case "easy":
+          data = easyQuestions;
+          break;
+        case "medium":
+          data = mediumQuestions;
+          break;
+        case "hard":
+          data = hardQuestions;
+          break;
+        default:
+          throw new Error("Invalid difficulty: " + difficulty);
+      }
     } else {
-      const easy = await importData("easy");
-      const medium = await importData("medium");
-      const hard = await importData("hard");
-      data = [...easy, ...medium, ...hard].sort((a, b) => a.id - b.id);
+      data = [...easyQuestions, ...mediumQuestions, ...hardQuestions].sort(
+        (a, b) => a.id - b.id
+      );
     }
 
     setQuestions(data);
   };
+
 
   useEffect(() => {
     loadQuestions(selectedDifficulty);
@@ -61,7 +56,9 @@ const Leetcode: React.FC = () => {
       <Leftbar
         questions={questions}
         onSelectDifficulty={setSelectedDifficulty}
-        onSelectQuestion={(id) => setSelectedQuestion(questions.find((q) => q.id === id) || null)}
+        onSelectQuestion={(id) =>
+          setSelectedQuestion(questions.find((q) => q.id === id) || null)
+        }
       />
       <div className="leetcode-main">
         {!selectedQuestion ? (
@@ -86,7 +83,10 @@ const Leetcode: React.FC = () => {
               <div key={lang}>
                 <h3>{lang}</h3>
                 <div className="leetcode-codebox">
-                  <button className="copy-btn" onClick={() => navigator.clipboard.writeText(code)}>
+                  <button
+                    className="copy-btn"
+                    onClick={() => navigator.clipboard.writeText(code)}
+                  >
                     Copy
                   </button>
                   <pre><code>{code}</code></pre>

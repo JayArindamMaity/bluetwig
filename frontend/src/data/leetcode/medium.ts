@@ -1,4 +1,4 @@
-import type { QuestionType } from "../../../src/pages/leetcode/leetcode";
+import type { QuestionType } from "../../pages/leetcode/leetcode";
 
 export const mediumQuestions: QuestionType[] = [
   {
