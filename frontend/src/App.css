@@ -11,7 +11,9 @@ a {
 }
 
 
-
+/* =======================
+   Root Variables
+   ======================= */
 :root {
   --navbar-icon-color: #ccc;
   --accent-color: #00aaff;
@@ -19,30 +21,44 @@ a {
   --text-color: #fff;
   --box-bg: #1a1a1a;
   --border-color: #333;
+  --scrollbar-width: 6px;
+  --scrollbar-radius: 3px;
+  --transition-speed: 0.3s;
 }
 
+/* =======================
+   Theme Overrides
+   ======================= */
 [data-theme="blue-dark"] {
   --navbar-icon-color: #e0e0e0;
   --accent-color: #00aaff;
   --bg-color: #0b0b0f;
+  --box-bg: #1a1a1a;
+  --border-color: #222;
 }
 
 [data-theme="orange-dark"] {
   --navbar-icon-color: #fffae0;
   --accent-color: #ff9100;
   --bg-color: #120e0a;
+  --box-bg: #1f0f0a;
+  --border-color: #331a0d;
 }
 
 [data-theme="purple-dark"] {
   --navbar-icon-color: #f0e0ff;
   --accent-color: #b26bff;
   --bg-color: #100918;
+  --box-bg: #1a0f1f;
+  --border-color: #2a1a33;
 }
 
 [data-theme="red-dark"] {
   --navbar-icon-color: #ffe0e0;
   --accent-color: #ff4f4f;
   --bg-color: #150808;
+  --box-bg: #150808;
+  --border-color: #330c0c;
 }
 
 
@@ -91,7 +107,7 @@ a {
 }
 
 .main-content {
-    margin-top: 10vh;
-    margin-left: 10vw;
-    margin-right: 10vw;
+  margin-top: 10vh;
+  margin-left: 10vw;
+  margin-right: 10vw;
 }

@@ -16,29 +16,24 @@
   color: var(--text-color);
   box-sizing: border-box;
   border-radius: 25px;
+  overflow: hidden;
 }
 
-/* Filters section - stays fixed */
+/* Filters section - stays fixed at top inside the sidebar */
 .leftbar-filters {
-  flex: 0 0 auto; /* fixed height based on content */
-  margin-bottom: 10px;
-}
-
-/* Questions container - scrollable, fills remaining space */
-.leftbar-questions {
-  flex: 1 1 auto; /* grow to fill remaining height */
-  overflow-y: auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-right: 5px; /* scrollbar space */
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 /* Section Headers */
 .leftbar h3 {
   font-size: 1.1rem;
-  margin-bottom: 10px;
+  margin: 0;
   color: var(--accent-color);
+  font-weight: 600;
 }
 
 /* Difficulty Buttons */
@@ -51,11 +46,10 @@
 .difficulty-btn {
   padding: 6px 12px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
-  background-color: var(--box-bg);
   color: var(--text-color);
   flex: 1 1 45%;
 }
@@ -66,9 +60,42 @@
 .difficulty-btn:nth-child(3) { background-color: #f44336; } /* Hard */
 .difficulty-btn:nth-child(4) { background-color: #607d8b; } /* All */
 
-/* Hover effect */
 .difficulty-btn:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+/* Search Input */
+.leftbar-search input {
+  width: 90%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  outline: none;
+  background-color: rgba(20, 20, 30, 0.8);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.leftbar-search input::placeholder {
+  color: #aaa;
+}
+
+.leftbar-search input:focus {
+  border-color: var(--accent-color);
+  background-color: rgba(30, 30, 50, 0.9);
+}
+
+/* Questions container - scrollable */
+.leftbar-questions {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 5px;
+  margin-top: 5px;
 }
 
 /* Question List */
@@ -81,20 +108,30 @@
   gap: 6px;
 }
 
+/* Question Items */
 .question-item {
   padding: 8px 12px;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   background-color: var(--box-bg);
   font-size: 0.95rem;
+  color: var(--text-color);
 }
 
-/* Hover effect */
 .question-item:hover {
   background-color: var(--accent-color);
   color: var(--bg-color);
   transform: translateX(2px);
+}
+
+/* Empty results */
+.no-results {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 /* Scrollbar Styling */

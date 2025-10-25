@@ -1,0 +1,129 @@
+.cf-leftbar {
+  position: fixed;
+  top: 0;
+  margin-top: 10vh;
+  width: 250px;
+  min-width: 220px;
+  height: 85vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 30, 30, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border-color);
+  color: var(--text-color);
+  box-sizing: border-box;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+/* Header */
+.cf-leftbar-header {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cf-leftbar-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.cf-leftbar-header input[type="text"] {
+  width: 90%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cf-leftbar-header input::placeholder {
+  color: #888;
+}
+
+.cf-leftbar-header input:focus {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Question list */
+.cf-leftbar-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 5px;
+}
+
+.cf-question-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--box-bg);
+  font-size: 0.95rem;
+  color: var(--text-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cf-question-item:hover {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  transform: translateX(2px);
+}
+
+.cf-question-item.active {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Rating text */
+.cf-question-rating {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  opacity: 0.85;
+}
+
+/* No results message */
+.cf-no-results {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Scrollbar for WebKit browsers */
+.cf-leftbar-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cf-leftbar-list::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color) !important;
+  /* force the theme color */
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+.cf-leftbar-list::-webkit-scrollbar-track {
+  background-color: var(--box-bg);
+}
+
+.slider-accent {
+  accent-color: var(--accent-color);
+
+}
