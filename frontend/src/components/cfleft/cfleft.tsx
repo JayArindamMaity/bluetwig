@@ -19,8 +19,10 @@ const CFLeftbar: React.FC<CFLeftbarProps> = ({
 }) => {
   const [search, setSearch] = useState("");
 
-  const filteredQuestions = questions.filter((q) =>
-    q.title.toLowerCase().includes(search.toLowerCase())
+  const filteredQuestions = questions.filter(
+    (q) =>
+      q.title.toLowerCase().includes(search.toLowerCase()) &&
+      q.rating === maxRating // only exact rating matches
   );
 
   return (
@@ -35,7 +37,7 @@ const CFLeftbar: React.FC<CFLeftbarProps> = ({
         />
 
         <div className="cf-slider">
-          <label>Max Rating: {maxRating}</label>
+          <label>Rating: {maxRating}</label>
           <input
             type="range"
             min="800"
@@ -55,7 +57,9 @@ const CFLeftbar: React.FC<CFLeftbarProps> = ({
           filteredQuestions.map((q) => (
             <div
               key={q.id}
-              className={`cf-question-item ${selectedId === q.id ? "active" : ""}`}
+              className={`cf-question-item ${
+                selectedId === q.id ? "active" : ""
+              }`}
               onClick={() => onSelectQuestion(q.id)}
             >
               <span className="cf-question-title">{q.title}</span>

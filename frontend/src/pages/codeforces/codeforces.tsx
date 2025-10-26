@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "../../pages/codeforces/codeforces.css";
 import CFLeftbar from "../../components/cfleft/cfleft";
-import { eightHundredQuestions } from "../../data/codeforces/eightHundred";
-import { nineHundredQuestions } from "../../data/codeforces/nineHundred";
-import { thousandQuestions } from "../../data/codeforces/thousand";
+import { eightHundredQuestions } from "../../data/codeforces/800";
+import { nineHundredQuestions } from "../../data/codeforces/900";
+import { thousandQuestions } from "../../data/codeforces/1000";
 import './codeforces.css'
 
 export interface CFQuestionType {
