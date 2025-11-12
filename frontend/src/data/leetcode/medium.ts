@@ -9,24 +9,10 @@ export const mediumQuestions: QuestionType[] = [
     difficulty: "Medium",
     solutions: {
       C: "C solution...",
-      "C++": "C++ solution...",
+      Cpp: "C++ solution...",
       Java: "Java solution...",
-      Python: "Python solution...",
       Rust: "Rust solution...",
-    },
-  },
-  {
-    id: 202,
-    title: "Longest Substring Without Repeating Characters",
-    link: "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
-    tags: ["Hash Map", "Sliding Window"],
-    difficulty: "Medium",
-    solutions: {
-      C: "C solution...",
-      "C++": "C++ solution...",
-      Java: "Java solution...",
       Python: "Python solution...",
-      Rust: "Rust solution...",
     },
   },
 ];

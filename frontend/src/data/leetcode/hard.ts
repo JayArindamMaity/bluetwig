@@ -9,24 +9,10 @@ export const hardQuestions: QuestionType[] = [
     difficulty: "Hard",
     solutions: {
       C: "C solution...",
-      "C++": "C++ solution...",
+      Cpp: "C++ solution...",
       Java: "Java solution...",
-      Python: "Python solution...",
       Rust: "Rust solution...",
-    },
-  },
-  {
-    id: 302,
-    title: "Trapping Rain Water",
-    link: "https://leetcode.com/problems/trapping-rain-water/",
-    tags: ["Array", "Two Pointers", "Stack"],
-    difficulty: "Hard",
-    solutions: {
-      C: "C solution...",
-      "C++": "C++ solution...",
-      Java: "Java solution...",
       Python: "Python solution...",
-      Rust: "Rust solution...",
     },
   },
 ];

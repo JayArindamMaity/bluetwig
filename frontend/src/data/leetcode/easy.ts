@@ -9,24 +9,10 @@ export const easyQuestions: QuestionType[] = [
     difficulty: "Easy",
     solutions: {
       C: `int maxProfit(int* prices, int pricesSize) {...}`,
-      "C++": `class Solution {...}`,
+      cpp: `class Solution {...}`,
       Java: `class Solution {...}`,
-      Python: `class Solution: ...`,
       Rust: `impl Solution {...}`,
-    },
-  },
-  {
-    id: 1,
-    title: "Two Sum",
-    link: "https://leetcode.com/problems/two-sum/",
-    tags: ["Array", "Hash Map"],
-    difficulty: "Easy",
-    solutions: {
-      C: "C solution...",
-      "C++": "C++ solution...",
-      Java: "Java solution...",
-      Python: "Python solution...",
-      Rust: "Rust solution...",
+      Python: `class Solution: ...`,
     },
   },
 ];
