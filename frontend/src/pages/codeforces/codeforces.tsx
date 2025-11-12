@@ -24,7 +24,7 @@ const Codeforces: React.FC = () => {
 
   const [questions, setQuestions] = useState<CFQuestionType[]>(allQuestions);
   const [selectedQuestion, setSelectedQuestion] = useState<CFQuestionType | null>(null);
-  const [maxRating, setMaxRating] = useState<number>(1000);
+  const [maxRating, setMaxRating] = useState<number>(800);
 
   useEffect(() => {
     const filtered = allQuestions.filter(q => q.rating <= maxRating);
@@ -46,7 +46,7 @@ const Codeforces: React.FC = () => {
       <div className="codeforces-main">
         {!selectedQuestion ? (
           <div className="codeforces-greeting">
-            <h2>Welcome to the Codeforces Solutions Hub ⚡</h2>
+            <h2>Welcome to the BlueTwig's Codeforces solutions section.</h2>
             <p>Use the slider in the sidebar to filter problems by rating, and pick one to view multi-language solutions.</p>
           </div>
         ) : (

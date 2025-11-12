@@ -63,7 +63,7 @@ const Leetcode: React.FC = () => {
       <div className="leetcode-main">
         {!selectedQuestion ? (
           <div className="leetcode-greeting">
-            <h2>Welcome to the LeetCode Solutions Hub 🚀</h2>
+            <h2>Welcome to BlueTwig's Leetcode solutions section.</h2>
             <p>Select a problem from the sidebar to view solutions in multiple languages.</p>
           </div>
         ) : (

@@ -5,6 +5,7 @@ import Leetcode from "./pages/leetcode/leetcode";
 // import Footer from "./components/footer/footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Codeforces from "./pages/codeforces/codeforces";
+import CodeChef from "./pages/codechef/codechef";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/leetcode" element={<Leetcode />} />
             <Route path="/codeforces" element={<Codeforces />} />
+            <Route path="/codechef" element={<CodeChef />} />
 
           </Routes>
         </div>

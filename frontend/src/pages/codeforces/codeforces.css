@@ -13,6 +13,9 @@
   background-color: var(--bg-color);
   color: var(--text-color);
   font-family: var(--font-family);
+  font-family: 'Fira Code', monospace;
+  /* clean monospaced font for code */
+
 }
 
 /* ===============================
@@ -23,7 +26,8 @@
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  margin-left: 15vw; /* match CFLeftbar width */
+  margin-left: 20vw;
+  /* match CFLeftbar width */
   transition: margin 0.3s ease;
 }
 
@@ -31,10 +35,12 @@
 .codeforces-main::-webkit-scrollbar {
   width: 8px;
 }
+
 .codeforces-main::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: 4px;
 }
+
 .codeforces-main::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -177,13 +183,11 @@ pre code {
   appearance: none;
   height: 5px;
   border-radius: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--accent-color) 0%,
-    var(--accent-color) 50%,
-    #444 50%,
-    #444 100%
-  );
+  background: linear-gradient(90deg,
+      var(--accent-color) 0%,
+      var(--accent-color) 50%,
+      #444 50%,
+      #444 100%);
   outline: none;
   transition: background 0.3s;
 }

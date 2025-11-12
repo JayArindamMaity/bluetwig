@@ -13,7 +13,7 @@
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  margin-left: 15vw; /* match leftbar width */
+  margin-left: 20vw; /* match leftbar width */
   transition: margin 0.3s;
 }
 
