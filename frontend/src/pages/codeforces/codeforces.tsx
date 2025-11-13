@@ -4,7 +4,15 @@ import CFLeftbar from "../../components/cfleft/cfleft";
 import { eightHundredQuestions } from "../../data/codeforces/800";
 import { nineHundredQuestions } from "../../data/codeforces/900";
 import { thousandQuestions } from "../../data/codeforces/1000";
-import './codeforces.css'
+import './codeforces.css';
+
+// 1. Import Syntax Highlighter
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+
+// 2. Choose your theme here. 
+// Use 'gruvboxDark' since you asked for it, or 'vscDarkPlus' to match the previous file.
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+// import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/prism'; 
 
 export interface CFQuestionType {
   id: number;
@@ -25,11 +33,20 @@ const Codeforces: React.FC = () => {
   const [questions, setQuestions] = useState<CFQuestionType[]>(allQuestions);
   const [selectedQuestion, setSelectedQuestion] = useState<CFQuestionType | null>(null);
   const [maxRating, setMaxRating] = useState<number>(800);
+  
+  // State for copy button feedback
+  const [copiedState, setCopiedState] = useState<string | null>(null);
 
   useEffect(() => {
     const filtered = allQuestions.filter(q => q.rating <= maxRating);
     setQuestions(filtered);
   }, [maxRating]);
+
+  const handleCopy = (code: string, lang: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedState(lang);
+    setTimeout(() => setCopiedState(null), 2000);
+  };
 
   return (
     <div className="codeforces-container">
@@ -63,16 +80,40 @@ const Codeforces: React.FC = () => {
             <p className="codeforces-rating">Rating: {selectedQuestion.rating}</p>
 
             {Object.entries(selectedQuestion.solutions).map(([lang, code]) => (
-              <div key={lang}>
-                <h3>{lang}</h3>
-                <div className="codeforces-codebox">
+              <div key={lang} style={{ marginBottom: "20px" }}>
+                <h3 style={{ textTransform: 'capitalize' }}>{lang}</h3>
+                
+                {/* Codebox Container */}
+                <div className="codeforces-codebox" style={{ position: "relative" }}>
                   <button
                     className="copy-btn"
-                    onClick={() => navigator.clipboard.writeText(code)}
+                    onClick={() => handleCopy(code, lang)}
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        zIndex: 5,
+                        padding: "5px 10px",
+                        cursor: "pointer"
+                    }}
                   >
-                    Copy
+                    {copiedState === lang ? "Copied!" : "Copy"}
                   </button>
-                  <pre><code>{code}</code></pre>
+
+                  <SyntaxHighlighter
+                    language={lang.toLowerCase() === 'c++' ? 'cpp' : lang.toLowerCase()}
+                    style={vscDarkPlus} 
+                    customStyle={{
+                      borderRadius: "8px",
+                      padding: "20px",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                    }}
+                    showLineNumbers={true}
+                    wrapLongLines={true}
+                  >
+                    {code}
+                  </SyntaxHighlighter>
                 </div>
               </div>
             ))}

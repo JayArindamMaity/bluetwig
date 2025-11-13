@@ -5,6 +5,11 @@ import { easyQuestions } from "../../data/leetcode/easy";
 import { mediumQuestions } from "../../data/leetcode/medium";
 import { hardQuestions } from "../../data/leetcode/hard";
 
+// 1. Import Syntax Highlighter and a Theme
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+// Change this line in your imports
+import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export interface QuestionType {
   id: number;
@@ -19,6 +24,7 @@ const Leetcode: React.FC = () => {
   const [questions, setQuestions] = useState<QuestionType[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionType | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [copiedState, setCopiedState] = useState<string | null>(null); // Optional: For copy feedback
 
   const loadQuestions = (difficulty: string | null) => {
     let data: QuestionType[] = [];
@@ -42,14 +48,18 @@ const Leetcode: React.FC = () => {
         (a, b) => a.id - b.id
       );
     }
-
     setQuestions(data);
   };
-
 
   useEffect(() => {
     loadQuestions(selectedDifficulty);
   }, [selectedDifficulty]);
+
+  const handleCopy = (code: string, lang: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedState(lang);
+    setTimeout(() => setCopiedState(null), 2000);
+  };
 
   return (
     <div className="leetcode-container">
@@ -80,16 +90,42 @@ const Leetcode: React.FC = () => {
             <p className="leetcode-diff">{selectedQuestion.difficulty}</p>
 
             {Object.entries(selectedQuestion.solutions).map(([lang, code]) => (
-              <div key={lang}>
-                <h3>{lang}</h3>
-                <div className="leetcode-codebox">
+              <div key={lang} style={{ marginBottom: "20px" }}>
+                <h3 style={{ textTransform: 'capitalize' }}>{lang}</h3>
+                
+                {/* Codebox Container */}
+                <div className="leetcode-codebox" style={{ position: "relative" }}>
                   <button
                     className="copy-btn"
-                    onClick={() => navigator.clipboard.writeText(code)}
+                    onClick={() => handleCopy(code, lang)}
+                    // Inline styles ensure button floats over the code
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      zIndex: 5,
+                      padding: "5px 10px",
+                      cursor: "pointer"
+                    }}
                   >
-                    Copy
+                    {copiedState === lang ? "Copied!" : "Copy"}
                   </button>
-                  <pre><code>{code}</code></pre>
+
+                  {/* Syntax Highlighter Component */}
+                  <SyntaxHighlighter
+                    language={lang.toLowerCase() === 'c++' ? 'cpp' : lang.toLowerCase()}
+                    style={gruvboxDark}
+                    customStyle={{
+                      borderRadius: "8px",
+                      padding: "20px",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                    }}
+                    showLineNumbers={true}
+                    wrapLongLines={true}
+                  >
+                    {code}
+                  </SyntaxHighlighter>
                 </div>
               </div>
             ))}

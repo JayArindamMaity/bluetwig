@@ -18,7 +18,6 @@ console = Console()
 
 ALLOWED_PLATFORMS = ["leetcode", "codeforces", "codechef"]
 
-# Map generic language keys to the specific casing required by the TS interface
 LANG_MAP = {
     "c": {"default": "C"},
     "cpp": {"codechef": "Cpp", "default": "cpp"}, 
@@ -27,17 +26,16 @@ LANG_MAP = {
     "rust": {"default": "Rust"},
 }
 
-# Updated Prompt for Inline Comments
 PROMPT_CONFIG = """You are an expert programmer.
 Your task is to add concise, explanatory comments to the following code.
 
 Instructions:
 1. Return the **FULL** code with comments added.
-2. Add comments using the standard syntax for the language (e.g., // for C++/Java, # for Python).
-3. Place comments on the same line as the code (e.g., `int a = 5; // comment`) where possible.
+2. Add comments using the standard syntax for the language.
+3. Place comments on the same line as the code where possible.
 4. Explain the **logic** or **purpose** of the line.
-5. **DO NOT** change the code logic, variable names, or structure.
-6. **DO NOT** wrap the output in markdown code blocks (like ```cpp). Just return the raw text.
+5. **DO NOT** change the code logic.
+6. **DO NOT** wrap the output in markdown code blocks. Just return the raw text.
 
 Code:
 {code}
@@ -63,25 +61,55 @@ def to_camel_case_var(num_or_str):
 
 def escape_backticks(text):
     if not text: return ""
-    return text.replace("`", "\\`").replace("${", "\\${")
+    # 1. Escape backslashes first (so \ becomes \\)
+    # 2. Escape backticks (so ` becomes \`)
+    # 3. Escape template vars (so ${ becomes \${)
+    return text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
 
 def unescape_backticks(text):
     if not text: return ""
-    return text.replace("\\`", "`").replace("\\${", "${")
+    # Reverse the order
+    return text.replace("\\${", "${").replace("\\`", "`").replace("\\\\", "\\")
 
 def strip_markdown(text):
-    """Removes markdown code fencing if Gemini adds it."""
-    # Remove starting ```lang
     text = re.sub(r"^```\w*\n", "", text)
-    # Remove ending ```
     text = re.sub(r"\n```$", "", text)
     return text.strip()
+
+# --- Parsing Logic (Smart Brace Counter) ---
+
+def extract_block_content(text, start_marker):
+    """
+    Robustly extracts content between braces using a counter.
+    """
+    start_idx = text.find(start_marker)
+    if start_idx == -1:
+        return None
+
+    open_brace_idx = text.find("{", start_idx)
+    if open_brace_idx == -1:
+        return None
+
+    balance = 0
+    content_start = open_brace_idx + 1
+    
+    for i in range(open_brace_idx, len(text)):
+        char = text[i]
+        if char == "{":
+            balance += 1
+        elif char == "}":
+            balance -= 1
+            
+        if balance == 0:
+            return text[content_start:i]
+            
+    return None
 
 # --- Gemini Logic ---
 
 def add_comments_to_code(code: str) -> str:
     if not HAS_GEMINI:
-        console.print("[red]Error: 'google-generativeai' library not found. Run `pip install google-generativeai`.[/red]")
+        console.print("[red]Error: 'google-generativeai' library not found.[/red]")
         return code
 
     try:
@@ -101,7 +129,7 @@ def add_comments_to_code(code: str) -> str:
     except Exception as e:
         console.print(f"[red]Error connecting to Gemini: {e}[/red]")
     
-    return code # Return original code if failure
+    return code
 
 # --- UI Functions ---
 
@@ -124,17 +152,23 @@ def select_from_list(title, options):
             return options[index]
 
 def get_multiline_input(prompt, end_marker="endloop"):
-    console.print(f"[cyan]{prompt} (end with '{end_marker}'):[/cyan]")
+    console.print(f"[cyan]{prompt} (Type '{end_marker}' on a new line to finish):[/cyan]")
     lines = []
     while True:
         try:
             line = input()
         except EOFError:
             break
+        
+        # Check for typo of endloop
         if line.strip() == end_marker:
             break
+        if line.strip().lower() == "endlopp":
+            console.print("[red]Warning: detected 'endlopp'. Assuming you meant 'endloop'. Finishing...[/red]")
+            break
+
         lines.append(line)
-    return "\n".join(lines)
+    return "\n".join(lines).strip() # Strip to remove trailing newlines
 
 # --- File Operations ---
 
@@ -160,7 +194,6 @@ def parse_existing_file(filepath):
     array_content = match.group(1).strip()
     entries = []
 
-    # Robust parsing by splitting on indentation
     raw_blocks = array_content.split("    {")
     
     def extract_val(text, key, is_string=True, is_array=False):
@@ -178,28 +211,44 @@ def parse_existing_file(filepath):
         m = p.search(text)
         return m.group(1) if m else None
 
-    def extract_solutions(text):
-        match = re.search(r"solutions:\s*\{(.*?)\}", text, re.DOTALL)
+    def parse_code_map(text_content):
         result = {}
-        if match:
-            inner = match.group(1)
-            code_pattern = re.compile(r"(\w+):\s*`([^`]*)`", re.DOTALL)
-            for cm in code_pattern.finditer(inner):
-                result[cm.group(1)] = unescape_backticks(cm.group(2))
+        if not text_content:
+            return result
+        # Regex to find key and backticked value
+        # Captures everything strictly between ` and ` even if it spans lines
+        # We must handle escaped backticks `\` inside manually
+        
+        # Simple regex often fails on complex nested escapes.
+        # We iterate manually or use a stronger regex.
+        # Let's use a loop for safety given the 'Unterminated' error history.
+        
+        # Quick Regex approach first (Usually sufficient with good escaping):
+        code_pattern = re.compile(r"(\w+):\s*`((?:[^`]|\\`)*)`", re.DOTALL)
+        
+        for cm in code_pattern.finditer(text_content):
+            result[cm.group(1)] = unescape_backticks(cm.group(2))
         return result
 
     for block in raw_blocks:
         if not block.strip() or "id:" not in block:
             continue
-        block = "    {" + block # fix split
+        block = "    {" + block 
         
+        # 1. Use Smart Brace Counter
+        solutions_content = extract_block_content(block, "solutions:")
+        
+        # 2. Parse Map
+        solutions_map = parse_code_map(solutions_content)
+
         entry = {
             "id": int(extract_val(block, "id", is_string=False) or 0),
             "title": extract_val(block, "title"),
             "link": extract_val(block, "link"),
             "tags": extract_val(block, "tags", is_array=True),
-            "solutions": extract_solutions(block)
+            "solutions": solutions_map
         }
+        
         rating = extract_val(block, "rating", is_string=False)
         difficulty = extract_val(block, "difficulty")
         if rating: entry["rating"] = int(rating)
@@ -233,8 +282,11 @@ def format_ts_export(export_name, data_list, platform, category_filename):
              lines.append(f"        difficulty: \"{entry['difficulty']}\",")
              
         lines.append("        solutions: {")
-        for lang, code in entry.get("solutions", {}).items():
+        # sort keys to keep file tidy
+        for lang in sorted(entry.get("solutions", {}).keys()):
+            code = entry["solutions"][lang]
             if code:
+                # Crucial: escape_backticks handles \ -> \\
                 lines.append(f"            {lang}: `{escape_backticks(code)}`,")
         lines.append("        },")
         lines.append("    },")
@@ -246,7 +298,7 @@ def format_ts_export(export_name, data_list, platform, category_filename):
 
 def main():
     console.print(
-        "[bold green]Codesolve Data Manager[/bold green] [yellow](Auto-Commenter Edition)[/yellow]\n"
+        "[bold green]Codesolve Data Manager[/bold green] [yellow](Final Fix)[/yellow]\n"
     )
 
     platform = select_from_list("Select Platform", ALLOWED_PLATFORMS)
@@ -277,7 +329,7 @@ def main():
     for entry in existing_entries:
         if entry["title"].lower() == ques_title.lower():
             target_entry = entry
-            console.print(f"[yellow]Found existing entry for '{ques_title}'. Updating...[/yellow]")
+            console.print(f"[yellow]Found existing entry for '{ques_title}'. Appending/Updating...[/yellow]")
             break
     
     if not target_entry:
@@ -314,7 +366,6 @@ def main():
     else:
         langs_to_process = [language_choice]
         
-    # To store which keys we just updated
     updated_keys = []
 
     for user_lang in langs_to_process:
@@ -322,7 +373,7 @@ def main():
         existing_code = target_entry["solutions"].get(ts_key, "")
         
         if existing_code and language_choice != "all":
-             console.print(f"[dim]Existing code found for {ts_key}.[/dim]")
+             console.print(f"[dim]Existing code found for {ts_key}. It will be updated.[/dim]")
         
         prompt = f"Enter code for {ts_key} ({user_lang})"
         code = get_multiline_input(prompt)
@@ -331,13 +382,13 @@ def main():
             target_entry["solutions"][ts_key] = code
             updated_keys.append(ts_key)
 
-    # --- Save Initial (Raw) Code ---
+    # --- Save Raw Code ---
     ts_content = format_ts_export(export_var_name, existing_entries, platform, category_file)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(ts_content)
-    console.print(f"\n[bold green]✅ Raw code saved to:[/bold green] {filepath}")
+    console.print(f"\n[bold green]✅ Code saved to:[/bold green] {filepath}")
 
-    # --- Gemini Commenting Feature ---
+    # --- Gemini Commenting ---
     if updated_keys:
         use_gemini = select_from_list("Use AI to add inline comments to the code?", ["yes", "no"])
         
@@ -347,11 +398,8 @@ def main():
                 console.print(f"Adding comments to [bold cyan]{ts_key}[/bold cyan]...")
                 
                 commented_code = add_comments_to_code(original_code)
-                
-                # Update the entry with the new commented code
                 target_entry["solutions"][ts_key] = commented_code
             
-            # --- Save Commented Code ---
             ts_content = format_ts_export(export_var_name, existing_entries, platform, category_file)
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(ts_content)

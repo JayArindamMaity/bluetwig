@@ -82,6 +82,14 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+
+/* .leetcode-codebox {
+  position: relative;
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden; 
+} */
+
 /* Copy button */
 .copy-btn {
   position: absolute;

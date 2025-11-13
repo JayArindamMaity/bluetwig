@@ -16,7 +16,8 @@ a {
    ======================= */
 :root {
   --navbar-icon-color: #ccc;
-  --accent-color: #00aaff;
+  /* Default accent (kept original, or change to #3399ff to match blue theme) */
+  --accent-color: #00aaff; 
   --bg-color: #0d0d0d;
   --text-color: #fff;
   --box-bg: #1a1a1a;
@@ -29,14 +30,17 @@ a {
 /* =======================
    Theme Overrides
    ======================= */
+
+/* 🔵 WARMER BLUE (Shifted from Cyan to Dodger Blue) */
 [data-theme="blue-dark"] {
-  --navbar-icon-color: #e0e0e0;
-  --accent-color: #00aaff;
-  --bg-color: #0b0b0f;
-  --box-bg: #1a1a1a;
-  --border-color: #222;
+  --navbar-icon-color: #e6eaf0;
+  --accent-color: #3399ff;   /* Warmer, richer blue */
+  --bg-color: #0d0e12;       /* Deep blue-black with less green tint */
+  --box-bg: #1a1b1f;
+  --border-color: #222830;
 }
 
+/* 🟠 ORANGE (Unchanged) */
 [data-theme="orange-dark"] {
   --navbar-icon-color: #fffae0;
   --accent-color: #ff9100;
@@ -45,14 +49,16 @@ a {
   --border-color: #331a0d;
 }
 
+/* 🟣 WARMER PURPLE (Shifted from Indigo to Orchid) */
 [data-theme="purple-dark"] {
-  --navbar-icon-color: #f0e0ff;
-  --accent-color: #b26bff;
-  --bg-color: #100918;
-  --box-bg: #1a0f1f;
-  --border-color: #2a1a33;
+  --navbar-icon-color: #fae0ff;
+  --accent-color: #d46bff;   /* More pink/red undertones */
+  --bg-color: #140918;       /* Deep plum background */
+  --box-bg: #1f0f1f;
+  --border-color: #331a30;
 }
 
+/* 🔴 RED (Unchanged) */
 [data-theme="red-dark"] {
   --navbar-icon-color: #ffe0e0;
   --accent-color: #ff4f4f;
@@ -60,7 +66,6 @@ a {
   --box-bg: #150808;
   --border-color: #330c0c;
 }
-
 
 /* .navbar {
   width: 220px;
