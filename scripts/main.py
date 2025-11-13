@@ -5,68 +5,105 @@ import readchar
 from rich.console import Console
 from dotenv import load_dotenv
 
+# Try importing the Google library with error handling
+try:
+    import google.generativeai as genai
+    HAS_GEMINI = True
+except ImportError:
+    HAS_GEMINI = False
+
 load_dotenv()
 
 console = Console()
 
 ALLOWED_PLATFORMS = ["leetcode", "codeforces", "codechef"]
 
-# Do NOT include "all" here
-ALLOWED_LANGUAGES = {
-    "cpp": "solcpp",
-    "java": "soljava",
-    "python": "solpyth",
-    "rust": "solrust",
+# Map generic language keys to the specific casing required by the TS interface
+LANG_MAP = {
+    "c": {"default": "C"},
+    "cpp": {"codechef": "Cpp", "default": "cpp"}, 
+    "java": {"default": "Java"},
+    "python": {"default": "Python"},
+    "rust": {"default": "Rust"},
 }
 
-# Add explanation keys
-ALL_KEYS = {
-    "solcpp": "",
-    "expcpp": "",
-    "soljava": "",
-    "expjava": "",
-    "solpyth": "",
-    "exppyth": "",
-    "solrust": "",
-    "exprust": "",
-}
+# Updated Prompt for Inline Comments
+PROMPT_CONFIG = """You are an expert programmer.
+Your task is to add concise, explanatory comments to the following code.
 
-PROMPT_CONFIG = """You are an expert programmer and technical writer.
-Provide a step-by-step explanation for the following solution in plain markdown bullet points.
+Instructions:
+1. Return the **FULL** code with comments added.
+2. Add comments using the standard syntax for the language (e.g., // for C++/Java, # for Python).
+3. Place comments on the same line as the code (e.g., `int a = 5; // comment`) where possible.
+4. Explain the **logic** or **purpose** of the line.
+5. **DO NOT** change the code logic, variable names, or structure.
+6. **DO NOT** wrap the output in markdown code blocks (like ```cpp). Just return the raw text.
 
-Follow these instructions strictly:
-1. The explanation must be **concise** and in plain points.
-2. Do **not** copy or quote lines from the original code.
-3. Do **not** repeat or rephrase the code. Focus only on describing the logic in a high-level manner.
-4. Do **not** use analogies or real-life examples.
-5. Discuss the logic and high-level approach separately from the code implementation.
-6. Do **not** use headings, bold text, or any form of formatting. Only use simple bullet points.
-7. Do **not** start with phrases like "Here is the explanation" or "Of course".
-8. The output must consist **only** of bullet points explaining the logic and idea behind the solution.
-
-Here is the solution:
-
+Code:
 {code}
 """
 
 MODEL_NAME = "models/gemini-2.5-pro"
 
+# --- Helper Functions ---
 
-def generate_explanation(code: str, prompt_config: str) -> str:
-    from google.generativeai import GenerativeModel, configure
+def get_lang_key(user_lang, platform):
+    mapping = LANG_MAP.get(user_lang, {})
+    return mapping.get(platform, mapping.get("default", user_lang))
 
-    configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = GenerativeModel(MODEL_NAME)
-    prompt = prompt_config.format(code=code)
+def to_camel_case_var(num_or_str):
+    if str(num_or_str).isdigit():
+        p = inflect.engine()
+        words = p.number_to_words(num_or_str).replace("-", " ").replace(",", "")
+        parts = words.split()
+        camel_case = parts[0].lower() + "".join(x.title() for x in parts[1:])
+        return f"{camel_case}Questions"
+    else:
+        return f"{num_or_str}Questions"
 
-    response = model.generate_content(
-        prompt, generation_config={"max_output_tokens": 1500}
-    )
+def escape_backticks(text):
+    if not text: return ""
+    return text.replace("`", "\\`").replace("${", "\\${")
 
-    if response.candidates and response.candidates[0].content.parts:
-        return response.candidates[0].content.parts[0].text.strip()
-    return ""
+def unescape_backticks(text):
+    if not text: return ""
+    return text.replace("\\`", "`").replace("\\${", "${")
 
+def strip_markdown(text):
+    """Removes markdown code fencing if Gemini adds it."""
+    # Remove starting ```lang
+    text = re.sub(r"^```\w*\n", "", text)
+    # Remove ending ```
+    text = re.sub(r"\n```$", "", text)
+    return text.strip()
+
+# --- Gemini Logic ---
+
+def add_comments_to_code(code: str) -> str:
+    if not HAS_GEMINI:
+        console.print("[red]Error: 'google-generativeai' library not found. Run `pip install google-generativeai`.[/red]")
+        return code
+
+    try:
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel(MODEL_NAME)
+        prompt = PROMPT_CONFIG.format(code=code)
+        
+        with console.status("[bold green]Gemini is reading your code and adding comments...[/bold green]"):
+            response = model.generate_content(
+                prompt, generation_config={"max_output_tokens": 2000}
+            )
+            
+        if response.candidates and response.candidates[0].content.parts:
+            raw_text = response.candidates[0].content.parts[0].text.strip()
+            return strip_markdown(raw_text)
+            
+    except Exception as e:
+        console.print(f"[red]Error connecting to Gemini: {e}[/red]")
+    
+    return code # Return original code if failure
+
+# --- UI Functions ---
 
 def select_from_list(title, options):
     index = 0
@@ -86,7 +123,6 @@ def select_from_list(title, options):
         elif key == readchar.key.ENTER:
             return options[index]
 
-
 def get_multiline_input(prompt, end_marker="endloop"):
     console.print(f"[cyan]{prompt} (end with '{end_marker}'):[/cyan]")
     lines = []
@@ -100,13 +136,13 @@ def get_multiline_input(prompt, end_marker="endloop"):
         lines.append(line)
     return "\n".join(lines)
 
+# --- File Operations ---
 
 def build_output_path(platform, category):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    base_path = os.path.join(project_root, "frontend", "public", "data", platform)
+    base_path = os.path.join(project_root, "frontend", "src", "data", platform)
     os.makedirs(base_path, exist_ok=True)
     return os.path.join(base_path, f"{category}.ts")
-
 
 def parse_existing_file(filepath):
     if not os.path.exists(filepath):
@@ -115,166 +151,212 @@ def parse_existing_file(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    match = re.search(r"\[\s*(.*?)\s*\];", content, re.DOTALL)
+    match = re.search(r"export const \w+.*?:.*?\[(.*?)\];", content, re.DOTALL)
     if not match:
-        return []
+        match = re.search(r"export const \w+\s*=\s*\[(.*?)\];", content, re.DOTALL)
+        if not match:
+            return []
 
     array_content = match.group(1).strip()
     entries = []
 
-    pattern = re.compile(
-        r'\{\s*quesname:\s*"([^"]+)",\s*'
-        r'queslink:\s*"([^"]+)",\s*'
-        r"soljava:\s*`([^`]*)`,\s*expjava:\s*`([^`]*)`,\s*"
-        r"solcpp:\s*`([^`]*)`,\s*expcpp:\s*`([^`]*)`,\s*"
-        r"solpyth:\s*`([^`]*)`,\s*exppyth:\s*`([^`]*)`,\s*"
-        r"solrust:\s*`([^`]*)`,\s*exprust:\s*`([^`]*)`\s*\}",
-        re.DOTALL,
-    )
+    # Robust parsing by splitting on indentation
+    raw_blocks = array_content.split("    {")
+    
+    def extract_val(text, key, is_string=True, is_array=False):
+        if is_array:
+            p = re.compile(rf"{key}:\s*\[(.*?)\]", re.DOTALL)
+            m = p.search(text)
+            if m:
+                raw = m.group(1)
+                return [x.strip().strip('"').strip("'") for x in raw.split(",") if x.strip()]
+            return []
+        if is_string:
+            p = re.compile(rf"{key}:\s*\"(.*?)\"", re.DOTALL)
+        else:
+            p = re.compile(rf"{key}:\s*([^\s,]+)", re.DOTALL)
+        m = p.search(text)
+        return m.group(1) if m else None
 
-    for m in pattern.finditer(array_content):
-        entries.append(
-            {
-                "quesname": m.group(1),
-                "queslink": m.group(2),
-                "soljava": m.group(3),
-                "expjava": m.group(4),
-                "solcpp": m.group(5),
-                "expcpp": m.group(6),
-                "solpyth": m.group(7),
-                "exppyth": m.group(8),
-                "solrust": m.group(9),
-                "exprust": m.group(10),
-            }
-        )
+    def extract_solutions(text):
+        match = re.search(r"solutions:\s*\{(.*?)\}", text, re.DOTALL)
+        result = {}
+        if match:
+            inner = match.group(1)
+            code_pattern = re.compile(r"(\w+):\s*`([^`]*)`", re.DOTALL)
+            for cm in code_pattern.finditer(inner):
+                result[cm.group(1)] = unescape_backticks(cm.group(2))
+        return result
+
+    for block in raw_blocks:
+        if not block.strip() or "id:" not in block:
+            continue
+        block = "    {" + block # fix split
+        
+        entry = {
+            "id": int(extract_val(block, "id", is_string=False) or 0),
+            "title": extract_val(block, "title"),
+            "link": extract_val(block, "link"),
+            "tags": extract_val(block, "tags", is_array=True),
+            "solutions": extract_solutions(block)
+        }
+        rating = extract_val(block, "rating", is_string=False)
+        difficulty = extract_val(block, "difficulty")
+        if rating: entry["rating"] = int(rating)
+        if difficulty: entry["difficulty"] = difficulty
+        entries.append(entry)
 
     return entries
 
-
-def number_to_words(num):
-    p = inflect.engine()
-    return p.number_to_words(num).replace("-", "_").replace(" ", "_")
-
-
-def escape_backticks(text):
-    return text.replace("`", "\\`")
-
-
-def format_ts_export(export_name, data_list, platform, category):
+def format_ts_export(export_name, data_list, platform, category_filename):
+    type_name = "CFQuestionType" if platform in ["codeforces", "codechef"] else "QuestionType"
+    import_path = f"../../pages/{platform}/{platform}"
+    
     lines = [
-        f"// This file contains {platform} {category} questions",
+        f"import type {{ {type_name} }} from \"{import_path}\";",
         "",
-        f"export const {export_name} = [",
+        f"export const {export_name}: {type_name}[] = [",
     ]
+    
     for entry in data_list:
-        lines.append("  {")
-        lines.append(f'    quesname: "{entry["quesname"]}",')
-        lines.append(f'    queslink: "{entry["queslink"]}",')
-        for key in [
-            "soljava",
-            "expjava",
-            "solcpp",
-            "expcpp",
-            "solpyth",
-            "exppyth",
-            "solrust",
-            "exprust",
-        ]:
-            code_str = escape_backticks(entry[key]) if entry[key] else ""
-            lines.append(f"    {key}: `{code_str}`,")
-        lines.append("  },")
+        lines.append("    {")
+        lines.append(f"        id: {entry['id']},")
+        lines.append(f"        title: \"{entry['title']}\",")
+        lines.append(f"        link: \"{entry['link']}\",")
+        
+        tags_str = ", ".join([f"\"{t}\"" for t in entry.get("tags", [])])
+        lines.append(f"        tags: [{tags_str}],")
+        
+        if "rating" in entry:
+             lines.append(f"        rating: {entry['rating']},")
+        if "difficulty" in entry:
+             lines.append(f"        difficulty: \"{entry['difficulty']}\",")
+             
+        lines.append("        solutions: {")
+        for lang, code in entry.get("solutions", {}).items():
+            if code:
+                lines.append(f"            {lang}: `{escape_backticks(code)}`,")
+        lines.append("        },")
+        lines.append("    },")
+    
     lines.append("];")
     return "\n".join(lines)
 
-
-def show_entries(entries):
-    console.print("\n[bold magenta]📜 Current Entries:[/bold magenta]")
-    for idx, e in enumerate(entries, start=1):
-        console.print(
-            f"[cyan]{idx}.[/cyan] {e['quesname']} - [blue]{e['queslink']}[/blue]"
-        )
-
+# --- Main ---
 
 def main():
     console.print(
-        "[bold green]Welcome to Codesolve!!![/bold green] [yellow](Interactive Edition)[/yellow]\n"
+        "[bold green]Codesolve Data Manager[/bold green] [yellow](Auto-Commenter Edition)[/yellow]\n"
     )
 
     platform = select_from_list("Select Platform", ALLOWED_PLATFORMS)
-    quesname = input("Enter question name (case sensitive): ").strip()
-    queslink = input("Enter question link: ").strip()
-
+    
     if platform == "leetcode":
-        rating = select_from_list("Select Rating", ["easy", "medium", "hard"])
-        category = rating
-        export_name = f"leetcode_{rating}"
+        rating_cat = select_from_list("Select Difficulty", ["easy", "medium", "hard"])
+        category_file = rating_cat
+        export_var_name = f"{rating_cat}Questions"
+        difficulty_val = rating_cat.capitalize()
+        rating_val = None
     else:
-        rating = input("Enter numeric rating (e.g., 800, 1200): ").strip()
-        rating_num = int(rating)
-        lower_bound = (rating_num // 100) * 100
-        category = str(lower_bound)
-        export_name = number_to_words(lower_bound)
+        rating_input = input("Enter rating (e.g., 800, 1000): ").strip()
+        try:
+            rating_num = int(rating_input)
+        except ValueError:
+            rating_num = 800
+        category_file = str(rating_num)
+        export_var_name = to_camel_case_var(rating_num)
+        rating_val = rating_num
+        difficulty_val = None
 
-    # add 'all' to the list of languages shown to the user
-    language_options = list(ALLOWED_LANGUAGES.keys()) + ["all"]
-    language_choice = select_from_list("Select Language", language_options)
-
-    filepath = build_output_path(platform, category)
+    filepath = build_output_path(platform, category_file)
     existing_entries = parse_existing_file(filepath)
 
-    # create / update entry
-    updated = False
+    ques_title = input("Enter Question Title: ").strip()
+    
     target_entry = None
-
     for entry in existing_entries:
-        if entry["quesname"] == quesname and entry["queslink"] == queslink:
+        if entry["title"].lower() == ques_title.lower():
             target_entry = entry
-            updated = True
+            console.print(f"[yellow]Found existing entry for '{ques_title}'. Updating...[/yellow]")
             break
-
-    if not updated:
-        target_entry = ALL_KEYS.copy()
-        target_entry.update({"quesname": quesname, "queslink": queslink})
+    
+    if not target_entry:
+        if existing_entries:
+            suggested_id = max(e["id"] for e in existing_entries) + 1
+        else:
+            suggested_id = 1
+        
+        id_input = input(f"Enter ID (default {suggested_id}): ").strip()
+        ques_id = int(id_input) if id_input.isdigit() else suggested_id
+        
+        ques_link = input("Enter Question Link: ").strip()
+        tags_input = input("Enter Tags (comma separated): ").strip()
+        tags_list = [t.strip() for t in tags_input.split(",") if t.strip()]
+        
+        target_entry = {
+            "id": ques_id,
+            "title": ques_title,
+            "link": ques_link,
+            "tags": tags_list,
+            "solutions": {}
+        }
+        if rating_val: target_entry["rating"] = rating_val
+        if difficulty_val: target_entry["difficulty"] = difficulty_val
         existing_entries.append(target_entry)
 
-    # Handle "all" or single language
+    # --- Code Input ---
+    language_options = list(LANG_MAP.keys()) + ["all"]
+    language_choice = select_from_list("Select Language to Add/Update", language_options)
+    
+    langs_to_process = []
     if language_choice == "all":
-        # alphabetical order
-        for lang in sorted(ALLOWED_LANGUAGES.keys()):
-            prompt = f"Enter your code for {lang}"
-            code = get_multiline_input(prompt)
-            target_entry[ALLOWED_LANGUAGES[lang]] = code
+        langs_to_process = sorted(LANG_MAP.keys())
     else:
-        code = get_multiline_input("Enter your code")
-        lang_key = ALLOWED_LANGUAGES[language_choice]
-        target_entry[lang_key] = code
+        langs_to_process = [language_choice]
+        
+    # To store which keys we just updated
+    updated_keys = []
 
-    # Save solutions
-    ts_content = format_ts_export(export_name, existing_entries, platform, category)
+    for user_lang in langs_to_process:
+        ts_key = get_lang_key(user_lang, platform)
+        existing_code = target_entry["solutions"].get(ts_key, "")
+        
+        if existing_code and language_choice != "all":
+             console.print(f"[dim]Existing code found for {ts_key}.[/dim]")
+        
+        prompt = f"Enter code for {ts_key} ({user_lang})"
+        code = get_multiline_input(prompt)
+        
+        if code.strip():
+            target_entry["solutions"][ts_key] = code
+            updated_keys.append(ts_key)
+
+    # --- Save Initial (Raw) Code ---
+    ts_content = format_ts_export(export_var_name, existing_entries, platform, category_file)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(ts_content)
-    console.print(
-        f"\n[bold green]✅ Solution saved successfully in:[/bold green] {filepath}"
-    )
+    console.print(f"\n[bold green]✅ Raw code saved to:[/bold green] {filepath}")
 
-    use_gemini = select_from_list(
-        "Generate Gemini explanation for this solution?", ["yes", "no"]
-    )
-
-    if use_gemini == "yes":
-        # generate explanations for all non-empty solution fields
-        for lang, sol_key in ALLOWED_LANGUAGES.items():
-            code_str = target_entry.get(sol_key, "")
-            if code_str.strip():
-                exp_key = "exp" + lang
-                explanation = generate_explanation(code_str, PROMPT_CONFIG)
-                target_entry[exp_key] = explanation
-
-        ts_content = format_ts_export(export_name, existing_entries, platform, category)
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(ts_content)
-        console.print("[green]✅ Explanations added using Gemini.[/green]")
-
+    # --- Gemini Commenting Feature ---
+    if updated_keys:
+        use_gemini = select_from_list("Use AI to add inline comments to the code?", ["yes", "no"])
+        
+        if use_gemini == "yes":
+            for ts_key in updated_keys:
+                original_code = target_entry["solutions"][ts_key]
+                console.print(f"Adding comments to [bold cyan]{ts_key}[/bold cyan]...")
+                
+                commented_code = add_comments_to_code(original_code)
+                
+                # Update the entry with the new commented code
+                target_entry["solutions"][ts_key] = commented_code
+            
+            # --- Save Commented Code ---
+            ts_content = format_ts_export(export_var_name, existing_entries, platform, category_file)
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(ts_content)
+            
+            console.print(f"\n[bold green]✅ Commented code updated successfully![/bold green]")
 
 if __name__ == "__main__":
     main()
