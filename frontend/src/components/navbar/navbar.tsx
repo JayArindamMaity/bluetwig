@@ -18,9 +18,8 @@ export default function Navbar() {
   }, [theme]);
 
   const themes = [
-    { name: "blue-dark", color: "#00aaff" },
     { name: "orange-dark", color: "#ff9100" },
-    { name: "purple-dark", color: "#b26bff" },
+    { name: "yellow-dark", color: "#ffd500" },
     { name: "red-dark", color: "#ff4f4f" },
   ];
 

@@ -15,13 +15,13 @@ a {
    Root Variables
    ======================= */
 :root {
-  --navbar-icon-color: #ccc;
-  /* Default accent (kept original, or change to #3399ff to match blue theme) */
-  --accent-color: #00aaff; 
-  --bg-color: #0d0d0d;
+  /* 🟠 Default is now ORANGE */
+  --navbar-icon-color: #fffae0;
+  --accent-color: #ff9100;
+  --bg-color: #120e0a;
   --text-color: #fff;
-  --box-bg: #1a1a1a;
-  --border-color: #333;
+  --box-bg: #1f0f0a;
+  --border-color: #331a0d;
   --scrollbar-width: 6px;
   --scrollbar-radius: 3px;
   --transition-speed: 0.3s;
@@ -31,16 +31,25 @@ a {
    Theme Overrides
    ======================= */
 
-/* 🔵 WARMER BLUE (Shifted from Cyan to Dodger Blue) */
-[data-theme="blue-dark"] {
-  --navbar-icon-color: #e6eaf0;
-  --accent-color: #3399ff;   /* Warmer, richer blue */
-  --bg-color: #0d0e12;       /* Deep blue-black with less green tint */
-  --box-bg: #1a1b1f;
-  --border-color: #222830;
+/* 🟡 YELLOW */
+[data-theme="yellow-dark"] {
+  --navbar-icon-color: #ffffe0;
+  --accent-color: #ffd500;
+  --bg-color: #121208;
+  --box-bg: #1f1f0e;
+  --border-color: #33331a;
 }
 
-/* 🟠 ORANGE (Unchanged) */
+/* 🔴 RED */
+[data-theme="red-dark"] {
+  --navbar-icon-color: #ffe0e0;
+  --accent-color: #ff4f4f;
+  --bg-color: #150808;
+  --box-bg: #1f0a0a;
+  --border-color: #330c0c;
+}
+
+/* 🟠 ORANGE (Explicit override to match default) */
 [data-theme="orange-dark"] {
   --navbar-icon-color: #fffae0;
   --accent-color: #ff9100;
@@ -48,25 +57,6 @@ a {
   --box-bg: #1f0f0a;
   --border-color: #331a0d;
 }
-
-/* 🟣 WARMER PURPLE (Shifted from Indigo to Orchid) */
-[data-theme="purple-dark"] {
-  --navbar-icon-color: #fae0ff;
-  --accent-color: #d46bff;   /* More pink/red undertones */
-  --bg-color: #140918;       /* Deep plum background */
-  --box-bg: #1f0f1f;
-  --border-color: #331a30;
-}
-
-/* 🔴 RED (Unchanged) */
-[data-theme="red-dark"] {
-  --navbar-icon-color: #ffe0e0;
-  --accent-color: #ff4f4f;
-  --bg-color: #150808;
-  --box-bg: #150808;
-  --border-color: #330c0c;
-}
-
 /* .navbar {
   width: 220px;
   background-color: var(--box-bg);
