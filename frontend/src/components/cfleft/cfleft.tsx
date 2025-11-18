@@ -40,7 +40,7 @@ const CFLeftbar: React.FC<CFLeftbarProps> = ({
           <label>Rating: {maxRating}</label>
           <input
             type="range"
-            min="800"
+            min="100"
             max="3500"
             step="100"
             value={maxRating}

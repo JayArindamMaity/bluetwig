@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../../pages/codechef/codechef.css";
 import CFLeftbar from "../../components/cfleft/cfleft";
 import { eightHundredQuestions } from "../../data/codechef/800";
+import { oneHundredQuestions } from "../../data/codechef/100";
 import './codechef.css';
 
 // 1. Import Syntax Highlighter
@@ -23,6 +24,7 @@ export interface CFQuestionType {
 
 const CodeChef: React.FC = () => {
   const allQuestions: CFQuestionType[] = [
+    ...oneHundredQuestions,
     ...eightHundredQuestions,
     // ...nineHundredQuestions,
     // ...thousandQuestions,
@@ -30,7 +32,7 @@ const CodeChef: React.FC = () => {
 
   const [questions, setQuestions] = useState<CFQuestionType[]>(allQuestions);
   const [selectedQuestion, setSelectedQuestion] = useState<CFQuestionType | null>(null);
-  const [maxRating, setMaxRating] = useState<number>(800);
+  const [maxRating, setMaxRating] = useState<number>(100);
   
   // State for copy feedback
   const [copiedState, setCopiedState] = useState<string | null>(null);
